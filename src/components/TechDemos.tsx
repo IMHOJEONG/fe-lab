@@ -1,0 +1,29 @@
+import { useState } from 'react';
+
+const snippets = {
+  container: `.responsive-demo { container-type: inline-size; }\n.responsive-card { display: flex; }\n@container (max-width: 320px) {\n  .responsive-card { flex-direction: column; }\n}`,
+  subgrid: `.aligned-grid {\n  display: grid;\n  grid-template-columns: repeat(2, 1fr);\n}\n.aligned-card {\n  display: grid; grid-row: span 3;\n  grid-template-rows: subgrid;\n}`,
+  snap: `.snap-track {\n  display: flex; overflow-x: auto;\n  scroll-snap-type: x mandatory;\n}\n.snap-slide {\n  flex: 0 0 85%; scroll-snap-align: center;\n}`,
+  state: `const [quantity, setQuantity] = useState(1);\nconst total = quantity * 24000;\n<button onClick={() => setQuantity(q => q + 1)}>\n  +\n</button>\n<output>{total.toLocaleString()}원</output>`,
+  transform: `const [angle, setAngle] = useState(25);\n<div style={{\n  transform: \`rotateX(-20deg) rotateY(\${angle}deg)\`\n}} />\n<input type="range" value={angle}\n  onChange={e => setAngle(Number(e.target.value))} />`,
+};
+
+function Demo({ number, title, tech, description, code, children }: { number: string; title: string; tech: string; description: string; code: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return <article className="tech-demo"><div className="demo-title"><span>{number} / {tech}</span><span className="live-dot">LIVE DEMO</span></div><h3>{title}</h3><p className="demo-description">{description}</p><div className="demo-stage">{children}</div><button className="code-toggle" aria-expanded={open} onClick={() => setOpen(!open)}><span>{'</>'} 적용된 핵심 코드</span><span>{open ? '접기 −' : '펼치기 +'}</span></button>{open && <pre className="demo-code"><code>{code}</code></pre>}</article>;
+}
+
+export default function TechDemos() {
+  const [width, setWidth] = useState(100);
+  const [longTitle, setLongTitle] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const [angle, setAngle] = useState(25);
+  return <div className="tech-demo-grid">
+    <Demo number="01" title="화면 대신, 공간에 반응하는 카드" tech="CSS / CONTAINER QUERIES" description="너비를 줄여 보세요. 카드가 놓인 공간이 320px 이하가 되면 세로 배치로 바뀝니다." code={snippets.container}><div className="demo-controls"><label htmlFor="container-width">컨테이너 너비</label><input id="container-width" type="range" min="55" max="100" value={width} onChange={e => setWidth(Number(e.target.value))}/><output>{width}%</output></div><div className="responsive-demo" style={{ width: `${width}%` }}><div className="responsive-card"><div className="responsive-art">✳</div><div><small>DESIGN NOTE / 001</small><h4>작은 공간의 가능성</h4><p>어디에 놓여도 자연스럽게.<br/>컴포넌트의 크기로 결정되는 레이아웃.</p><span>Read story ↗</span></div></div></div></Demo>
+    <Demo number="02" title="다른 내용, 같은 정렬선" tech="CSS / SUBGRID" description="제목 길이를 바꿔도 설명과 버튼은 같은 줄에 맞춰집니다. 부모 그리드의 행을 공유합니다." code={snippets.subgrid}><div className="demo-controls"><label htmlFor="long-title">긴 제목 적용</label><input id="long-title" type="checkbox" checked={longTitle} onChange={e => setLongTitle(e.target.checked)}/></div><div className="aligned-grid"><div className="aligned-card"><h4>{longTitle ? '일상의 작은 순간을 발견하는 새로운 디자인 이야기' : '디자인 이야기'}</h4><p>긴 제목이 있어도 카드의 정보는 같은 기준선에 놓입니다.</p><span>Explore ↗</span></div><div className="aligned-card"><h4>Build something.</h4><p>짧은 제목 아래에도 같은 정렬을 유지합니다.</p><span>Explore ↗</span></div></div></Demo>
+    <Demo number="03" title="손끝에서 멈추는 갤러리" tech="CSS / SCROLL SNAP" description="좌우로 스크롤하거나 버튼을 눌러 보세요. 스크롤이 끝나면 카드가 중앙에 맞춰집니다." code={snippets.snap}><div className="demo-controls"><span>가로 스크롤로 탐색</span><div className="snap-buttons"><button aria-label="이전 카드" onClick={e => e.currentTarget.closest('.demo-stage')?.querySelector('.snap-track')?.scrollBy({ left: -300, behavior: 'smooth' })}>←</button><button aria-label="다음 카드" onClick={e => e.currentTarget.closest('.demo-stage')?.querySelector('.snap-track')?.scrollBy({ left: 300, behavior: 'smooth' })}>→</button></div></div><div className="snap-track" tabIndex={0} aria-label="가로 스크롤 갤러리">{['FORM', 'COLOR', 'SPACE'].map((word, i) => <div className={`snap-slide slide-${i}`} key={word}><span>0{i + 1} / VISUAL STUDY</span><strong>{word}</strong><span>{['◇', '◉', '▦'][i]}</span></div>)}</div></Demo>
+    <Demo number="04" title="하나의 상태, 바로 바뀌는 화면" tech="REACT / STATE" description="수량을 조절하면 합계가 즉시 갱신됩니다. 화면에 표시되는 값은 같은 상태에서 계산합니다." code={snippets.state}><div className="state-product"><div className="product-symbol">◒</div><div><small>EVERYDAY OBJECTS</small><h4>Everyday cup</h4><span>24,000원 / 개</span></div></div><div className="quantity-controls"><span>수량</span><div><button aria-label="수량 줄이기" disabled={quantity === 1} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button><output aria-live="polite">{quantity}</output><button aria-label="수량 늘리기" onClick={() => setQuantity(q => q + 1)}>+</button></div></div><div className="state-total"><span>합계</span><output aria-live="polite">{(quantity * 24000).toLocaleString()}원</output></div></Demo>
+    <Demo number="05" title="CSS로 만드는 작은 3D 공간" tech="CSS + REACT / 3D TRANSFORMS" description="슬라이더로 회전 각도를 조절하세요. CSS 원근과 3D 변환을 React 상태에 연결했습니다." code={snippets.transform}><div className="cube-perspective"><div className="css-cube" style={{ transform: `rotateX(-20deg) rotateY(${angle}deg)` }}>{['front','back','left','right','top','bottom'].map(face => <div className={`cube-face ${face}`} key={face}>✳</div>)}</div></div><div className="demo-controls"><label htmlFor="cube-angle">회전 각도</label><input id="cube-angle" type="range" min="0" max="360" value={angle} onChange={e => setAngle(Number(e.target.value))}/><output>{angle}°</output></div></Demo>
+    <aside className="demo-invitation"><span className="eyebrow">SMALL EXPERIMENTS. REAL POSSIBILITIES.</span><span className="invitation-symbol">✳</span><h3>한 가지 기술을,<br/>확실히 이해하는 방법.</h3><p>직접 바꾸고, 결과를 보고, 코드를 살펴보세요.<br/>작은 데모가 실제 화면을 만드는 재료가 됩니다.</p><a href="#playground">WebGL 3D 실험도 살펴보기 ↗</a></aside>
+  </div>;
+}
